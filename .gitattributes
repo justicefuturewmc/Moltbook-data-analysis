@@ -1,0 +1,31 @@
+# Normalize text files for cross-platform collaboration
+* text=auto
+
+# Source and documentation text
+*.py text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.json text eol=lf
+*.csv text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Notebooks are JSON text, but usually easier to review with notebook-aware tools
+*.ipynb text eol=lf
+
+# Office/data binaries
+*.xlsx binary
+*.xls binary
+*.docx binary
+*.pptx binary
+*.pdf binary
+
+# Archives and images
+*.zip binary
+*.7z binary
+*.rar binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
