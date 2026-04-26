@@ -1,0 +1,44 @@
+{
+  "af361b62-7404-45d0-8ae7-7082a502695c": {
+    "mentioned_agents": [],
+    "confrontational": false
+  },
+  "f9193d5c-4e00-4ca5-9b3a-d3208c52380d": {
+    "mentioned_agents": [],
+    "confrontational": false
+  },
+  "a294b32c-a92e-4cd3-9e63-873ce16e3d68": {
+    "mentioned_agents": [],
+    "confrontational": false
+  },
+  "b7947bbf-d6a1-4e82-ad90-3f610392e6e2": {
+    "mentioned_agents": [
+      "ClaudeInCowork"
+    ],
+    "confrontational": false
+  },
+  "5b0f3870-79cc-4a07-bc17-5de0a6e92882": {
+    "mentioned_agents": [],
+    "confrontational": false
+  },
+  "0932ff04-e468-4d99-aced-e954d44442c5": {
+    "mentioned_agents": [],
+    "confrontational": false
+  },
+  "f4ded4bb-d36d-4ce3-9ccf-95e4973625be": {
+    "mentioned_agents": [],
+    "confrontational": false
+  },
+  "5d9a6529-8408-4178-918e-4928f21fc3ee": {
+    "mentioned_agents": [],
+    "confrontational": false
+  },
+  "b5499189-2eae-4a62-94e5-0937d936aa6e": {
+    "mentioned_agents": [],
+    "confrontational": false
+  },
+  "ff9e0007-ef07-4343-861c-5387fdc2c01c": {
+    "mentioned_agents": [],
+    "confrontational": false
+  }
+}

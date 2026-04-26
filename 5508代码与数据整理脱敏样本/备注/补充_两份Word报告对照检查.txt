@@ -1,0 +1,94 @@
+本文件为后增补充说明，不修改、不替代《流程梳理说明.txt》等既有材料。
+
+对照对象
+--------
+1. The Real Ecosystem of Moltbook An Empirical Study of AI Agent Behaviors.docx
+2. 3.3Method&Result(1).docx
+
+检查标准
+--------
+- 文本性质的总述、解释、结论、图注，可视为工作以外的说明噪音，不强制纳入修正整理。
+- 含代码性质的分析、可复现的数据处理、模型训练、规则分类、统计图生成，应当进入修正整理，且不修改既有文件以免影响版本管理。
+
+一、The Real Ecosystem 总报告对照
+--------------------------------
+
+1. 数据获取与清洗 2.1-2.3
+   - 报告写明原始 API 数据整理为 `moltbook_agents_full_extract.xlsx`，并经四阶段 Python 清洗。
+   - 阶段 1-3 对应修正整理：
+     - `01_原始数据清洗与语种检测\5508clean.py`
+     - `02_帖子内容类型分类\5508clean2.py`
+     - `03_文本与脚本类型细化\5508clean3.py`
+   - 阶段 4 `**` 特殊模式标记已通过新增目录补齐：
+     - `03b_星号双字符模式标记_可选\5508clean4星号.py`
+   - 结论：清洗链已覆盖；其中 03b 是可选/并列输出，不替代 `refined_moltbook.xlsx` 主链。
+
+2. Overall user profile / 概况分析
+   - 报告描述 language、karma、post time、follower、post length 等 pandas 描述统计。
+   - 代码来源主要对应 `group\pre\概况分析\analysis2.0.ipynb` 等副本。
+   - 按当前规则，这类 notebook 可视为探索/文本性概况支撑，不强制并入修正整理；如需完整复现报告图 1-4，可另设概况分析目录。
+
+3. Topic analysis
+   - 报告写明筛选 final_type=text 且 language=en，使用 TF-IDF、K-means、silhouette score，并生成 8 类主题。
+   - 代码也主要在 `analysis2.0.ipynb`。
+   - 属于代码性分析，但已被用户标准归为“文本性质分析可算工作外噪音”的边界项；当前未并入主整理目录。
+
+4. 3.3 AI subjectivity / adversarial behavior / network stratification
+   - LLM 对抗标注、NetworkX 网络、PageRank/Betweenness、Social Rank Score、回归分析，均是代码性分析。
+   - 修正整理已覆盖：
+     - `04_Agent互动网络提取\net.py`
+     - `05_中心性与社交等级计算\level.py`
+     - `06_社交指标可视化与回归分析\detailanalysislocal.py`
+     - `07_对抗行为LLM标注_ant四维度\against_ai - 副本.py`
+     - `10_LLM社会心理行为评分\answeradvance_ai.py`
+     - `10_LLM社会心理行为评分\answeradvance_ai_simple.py`
+     - `11_社交对抗整合离线分析\answeradvance.py`
+   - 结论：主体性/对抗/网络层级部分大体已覆盖。
+
+5. 3.4 How AI Agents Perceive and Discuss Humans
+   - 报告写明 keyword filter、人工校验、TF-IDF、LogisticRegression、四个分类任务，以及 Sentiment_ML / Topic_ML / Role_ML。
+   - 这是明确的代码性分析。
+   - 原修正整理 01-12 未收录；现已新增：
+     - `13_人类感知监督学习与脏话分析\5508_3.4&5_0326_final.ipynb`
+   - 结论：已通过新增目录补齐代码。
+
+6. 3.5 Profanity Usage by AI Agents
+   - 报告写明 profanity lexicon、regex boundary、context topic classification、target identification、donut charts、word cloud。
+   - 这是明确的代码性分析。
+   - 原修正整理 01-12 未收录；现同样由新增 notebook 补齐：
+     - `13_人类感知监督学习与脏话分析\5508_3.4&5_0326_final.ipynb`
+   - 结论：已通过新增目录补齐代码。
+
+二、3.3Method&Result(1) 对照
+----------------------------
+
+1. Micro-Adversarial Behavior
+   - 文档写明 DeepSeek API、asyncio、concurrency=15、cache、retry、四维对抗框架。
+   - 对应修正整理：
+     - `07_对抗行为LLM标注_ant四维度\against_ai - 副本.py`
+   - 结论：已覆盖。
+
+2. Network Topology / Stratification Regression
+   - 文档写明 NetworkX、Degree Centrality、PageRank、Betweenness、Social Rank Score、四层分级、Scikit-learn 回归。
+   - 对应修正整理：
+     - `04_Agent互动网络提取\net.py`
+     - `05_中心性与社交等级计算\level.py`
+     - `06_社交指标可视化与回归分析\detailanalysislocal.py`
+     - `11_社交对抗整合离线分析\answeradvance.py`
+   - 结论：已覆盖。
+
+3. Meaningless Behavior
+   - 文档写明 regex filtering、N-gram frequency analysis、2.3% meaningless behavior、与低层级和高强度对抗压力相关。
+   - 修正整理中已有 `10_LLM社会心理行为评分\answeradvance_ai_simple.py` 和 `备注\codebook.txt` 解释 meaningless_routine。
+   - 但文档称 regex + N-gram；当前已收录脚本更偏 LLM/规则维度补充，未在已检查代码中找到一个完全对应“regex + N-gram frequency analysis”的独立脚本。
+   - 结论：此处存在表述与代码归档的轻微缺口。若组内确有独立 regex/N-gram 脚本，应继续补入；若只是报告写法概括，则需在说明中标注其实际实现依据。
+
+三、最终结论
+------------
+- 清洗 1-4 阶段：已覆盖，03b 为新增可选步骤。
+- 3.3 对抗、网络、社交层级、回归：已覆盖。
+- 3.4 人类感知监督学习：原未覆盖，已新增 notebook 补齐。
+- 3.5 脏话使用分析：原未覆盖，已新增 notebook 补齐。
+- Meaningless Behavior 的 regex + N-gram 版本：仍需组内确认是否存在独立脚本；当前修正整理只明确覆盖 LLM/行为维度版本。
+
+（文档结束）

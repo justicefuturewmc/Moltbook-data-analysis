@@ -1,0 +1,132 @@
+COM5508 数据与分析流程整理说明
+========================================
+数据文件：本目录不附带 .xlsx 等大型数据；各步骤所需输入输出文件名见下文，请从原始数据处自备。
+
+一、总览：主链路与并行分支
+----------------------------
+【主链路】按编号 01→03 顺序执行；04～06 依赖 03 产出的 refined_moltbook.xlsx（及 04→05 所需的 network_advance.xlsx 衔接）；07 与 04～06 无先后依赖，均在步骤 03 之后即可开展。
+
+【易混淆点】
+- `against_ai - 副本.py`（步骤 07）：仅标注帖子的 ant_type / ant_strength / ant_intent / ant_strategy（对抗类型、强度、意图、策略），不包含 codebook 中的「规律性无意义行为 meaningless_routine」。
+- 「无意义行为」等扩展维度见 步骤 10 中 `answeradvance_ai_simple.py`，并与 `备注\codebook.txt` 中的维度定义对应。
+- `against_ai.py`（步骤 08，非「副本」文件）：在 Agent 全名列表下识别 被提及的 agent 与 confrontational，输出引用边表；任务与步骤 07 不同，且默认输入文件名为 refined_moltbook2.xlsx（若你的数据仅有 refined_moltbook.xlsx，运行前需改名或改脚本）。
+
+
+二、文件夹与执行顺序（建议）
+----------------------------
+
+01_原始数据清洗与语种检测
+  脚本：5508clean.py
+  数据：moltbook_agents_full_extract（3.2）操作.xlsx（输入）
+        cleaned_moltbook操作.xlsx（输出）
+  作用：对 post_content 做语种检测；按规则标记 is_valid 并过滤无效帖。
+
+02_帖子内容类型分类
+  脚本：5508clean2.py
+  数据：cleaned_moltbook操作.xlsx（输入）
+        classified_moltbook操作2.xlsx（输出）
+  作用：区分自然语言与代码类内容，标注 code_function（含虚拟币协议等）。
+
+03_文本与脚本类型细化
+  脚本：5508clean3.py
+  数据：classified_moltbook操作2.xlsx（输入）
+        refined_moltbook.xlsx（输出）
+  作用：按代码占比等规则得到 final_type（text / script），形成后续多步共用的主表。
+
+04_Agent互动网络提取
+  脚本：net.py
+  数据：refined_moltbook.xlsx（输入）
+  作用：从正文提取 @ 提及等互动，构建有向加权图；节点/边表导出路径以脚本内配置为准（多为运行目录下 CSV / xlsx）。
+  说明：对接步骤 05 时，通常需将边表整理为 network_advance.xlsx（列 source、target、weight，Sheet1）；仓库未必附带该文件，需自行导出或另存。
+
+05_中心性与社交等级计算
+  脚本：level.py
+  数据：network_advance.xlsx（输入，需与脚本同目录或按脚本内路径放置）
+        refined_moltbook.xlsx（输入，聚合 karma 等节点属性）
+        social_rank_analysis_with_betweenness_total.xlsx（输出）
+  作用：计算度、加权度、PageRank、特征向量、介数等中心性，与属性融合得到 social_rank_score 与四分位 level。
+  重要：运行前请确认能读取 network_advance.xlsx，否则步骤无法进行。
+
+06_社交指标可视化与回归分析
+  脚本：detailanalysislocal.py
+  数据：social_rank_analysis_with_betweenness_total.xlsx（输入）
+  作用：按 level 绘制箱线图、雷达图等，并进行相关统计/回归分析（图表默认写入运行当前目录）。
+
+07_对抗行为LLM标注_ant四维度
+  脚本：against_ai - 副本.py
+  数据：refined_moltbook.xlsx（输入）
+        ant_cache.json、ant_stats.json（运行缓存/统计，运行后生成；可不纳入版本库）
+        moltbook_ant_annotated.xlsx（标注结果输出）
+  作用：调用 DeepSeek API，对每条帖子输出 对抗类型、强度、意图、策略 四维标注；prompt 内要求忽略代码可执行性、仅作语义解读。
+  注意：脚本内含 API 密钥占位，务必改为环境变量或本地私密配置，勿提交到公开仓库。
+
+08_Agent提及与引用关系_LLM（并行分支，区别于步骤 07）
+  脚本：against_ai.py
+  数据：refined_moltbook2.xlsx（脚本内硬编码文件名；请按实际主表文件名调整）
+        analysis_cache.json（缓存，可选）
+  输出：agent_references_llm.csv（source_agent、target_agent、post_id、confrontational 等）
+  作用：在给定全表 Agent 名列表下，由 LLM 识别帖子显式/隐式 提及的 agent，并判断对该引用是否 confrontational；用于「谁指向谁」的引用网络，不是 ant_type 那套字段。
+
+09_规则基对抗关键词检测（并行分支，非 LLM）
+  脚本：against.py
+  数据：refined_moltbook.xlsx（脚本内默认）
+  作用：基于中英文关键词与对抗表情符号，生成 is_antagonistic 等规则列；可作基线或与 LLM 结果对照，不能替代步骤 07 的细粒度标注。
+
+10_LLM社会心理行为评分（并行分支；依赖社交表 + 步骤 07 产出）
+  脚本：answeradvance_ai.py
+        answeradvance_ai_simple.py
+  数据：social_rank_analysis_with_betweenness_total.xlsx
+        moltbook_ant_annotated.xlsx
+  作用：
+    - answeradvance_ai.py：对帖子再评 对抗性 antagonism、拟人化 anthropomorphism、自我意识 self_awareness 三个 0～10 分（与 codebook 中部分维度名称可对照），不含 meaningless_routine。
+    - answeradvance_ai_simple.py：在「非对抗」等条件下对子集追加 meaningless_routine（规律性无意义行为） 等维度的 API 分析；此处才出现与 `备注\codebook.txt` 中 meaningless_routine 说明一致的打分逻辑。
+  注意：两脚本均含 API 配置，注意密钥安全。
+
+11_社交对抗整合离线分析（并行分支；无 API）
+  脚本：answeradvance.py
+  数据：social_rank_analysis_with_betweenness_total.xlsx（脚本内示例带「- 样本」后缀文件名，实际使用时请与真实文件名对齐）
+        moltbook_ant_annotated.xlsx（同上）
+  作用：合并社交排名与对抗标注表，做分布统计、相关性、简单网络与图表输出；不调用大模型。
+
+12_Agent间引用与相似句检测（并行分支；可选嵌入）
+  脚本：find.py
+  数据：refined_moltbook.xlsx（默认 Sheet1；需含 post_title、post_content、name、post_id 等列，与脚本一致）
+  输出：citation_basic.csv；若安装 sentence_transformers 与 faiss，可额外生成 citation_embedding.csv
+  作用：基于句子拆分、倒排索引与相似度（可选向量检索）估计 Agent 间显式/隐式引用，独立于 步骤 04 的 @ 网络提取与步骤 08 的 LLM 提及识别。
+
+
+三、脚本与「对抗 / 无意义」维度速查（本部分由AI梳理）
+----------------------------
+  脚本名                      | 是否 LLM | 与「无意义 meaningless」关系
+  ----------------------------|----------|----------------------------------
+  against_ai - 副本.py        | 是       | 无；仅 ant 四维
+  against_ai.py               | 是       | 无；提及 + confrontational
+  against.py                  | 否       | 无
+  answeradvance_ai.py         | 是       | 无（三维度）
+  answeradvance_ai_simple.py  | 是       | 有 meaningless_routine 等扩展
+  answeradvance.py            | 否       | 无
+
+
+四、与「文件命名.txt」的对应关系
+----------------------------
+原始 → 一次清洗 → 二次分类 → 细化主表 的命名链见本目录 `文件命名.txt`：
+  moltbook_agents_full_extract（3.2）操作
+  → cleaned_moltbook操作
+  → classified_moltbook操作2
+  → refined_moltbook
+
+
+五、运行提示
+----------------------------
+- 各步骤请在对应子文件夹内运行，或将数据文件放到脚本内硬编码路径所期望的位置。
+- 步骤 04 产出的边表若需对接步骤 05，请自行整理为 network_advance.xlsx 并满足列名与 Sheet 要求。
+- 含 API 的脚本：建议使用环境变量注入密钥，并限制 ant_cache.json / analysis_cache.json 等缓存文件的访问权限。
+- 仓库中 `py\`、`community\`、`整理\` 等位置可能存在同名脚本的其它副本；以本「修正整理」目录内副本为准对照本说明，若需与组员其它目录同步，请 diff 后再决定以哪份为准。
+
+
+六、本目录「备注」子文件夹
+----------------------------
+- codebook.txt：各行为维度的文字定义（含 meaningless_routine）；与步骤 10 中 LLM 脚本维度应对照阅读，勿与步骤 07 的 ant 四字段混为一谈。
+- 主题含义备注.txt、语言代码含义备注.txt：自「整理\备注」复制，供主题与语种字段释义参考。
+
+（文档结束）

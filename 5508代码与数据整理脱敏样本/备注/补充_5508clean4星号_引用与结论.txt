@@ -1,0 +1,50 @@
+本文件为后增补充说明，不修改、不替代《流程梳理说明.txt》等既有材料。
+
+一、问题
+--------
+判断 `5508clean4星号.py` 是否在「部分分析」中被依赖；在不影响既有版本管理的前提下，将**含代码**的该步骤以新增文件方式纳入 `修正整理`。
+
+二、对 xlsx 的少量表头与抽样核查（工作区 group 目录）
+--------------------------------------------------
+以下使用 Python + openpyxl 仅读表头（必要时抽样读列），路径示例：group\refined_moltbook.xlsx 等。
+
+1. `refined_moltbook.xlsx`（与主链步骤 03 常见输出名一致）
+   - 列数 36，**不含** 列名 `classification`。
+
+2. `classified_moltbook操作2.xlsx`（与 clean4 默认输入名一致，步骤 02 常见输出名）
+   - 列数 35，**不含** `classification`。
+
+3. `classified_with_label.xlsx`（与 clean4 默认输出名一致，由 5508clean4星号 生成）
+   - 列数 36，**含** 列名 `classification`（位于最后一列，索引 35）。
+   - 对前 50000 行 `classification` 列做过一次 value_counts 抽样，得到约 A:6966、B:43034，与全量比例一致。
+   - 全量列统计（对整表该列，后台任务已跑通）：A:15095，B:92791，合计 107886 行。
+
+结论：星号脚本的产物在独立表 `classified_with_label.xlsx` 上可验证；**主表 refined_moltbook 并不携带** `classification` 列，与 03 输出一致。
+
+三、对仓库内**分析代码**的静态检索
+--------------------------------
+在工程内检索（排除课程向 `Toturial Codes` 后主观筛选）可见：
+
+- 除 `5508clean4星号.py` 自身外，**没有** 其它项目 `.py` 读取 `classified_with_label.xlsx` 或对 DataFrame 使用列名 `['classification']` 指代本脚本的 A/B 标签。
+
+- `group\pre\概况分析\analysis2.0.ipynb`（等副本）在源码字符串中显式使用 `refined_moltbook.xlsx` 与列如 `post_content`, `final_type`, `karma` 等，**未** 要求 `classification` 列。
+
+- `group\最终输出文件\3.4 人类\产出_final_ml_analysis_result_v4.csv` 的表头含 `final_type`、ML 预测列等，**无** 本脚本的 `classification` 列。
+
+因此：若「部分分析时引用」指**本仓库中可追踪的 Python 主分析/终稿数据管线**，**未发现** 对 A/B 列的自动化消费；`classified_with_label.xlsx` 更适合理解为**与 refined 主链并列的可选表**，或供人工/表外统计使用。手搓 Excel 若曾引用，无法从仓库内脚本侧验证。
+
+四、与既有「01→03 主链」的关系（便于和《文件命名.txt》对照）
+------------------------------------------
+- 步骤 01→02→03 的命名链仍产出 `refined_moltbook`（不经过星号列）。
+- `5508clean4星号` 的默认 I/O 为：`classified_moltbook操作2.xlsx` → `classified_with_label.xlsx`（与 `group/5508clean4星号.py` 内 `if __name__` 块一致），**不替代** 03 的 `refined_moltbook`；若需与主链列对齐后再标星，需在组内自行约定中间衔接方式（本说明不扩展主链，以免与既有定稿冲突）。
+
+五、本补充采取的措施（不改动已有文件内容）
+------------------------
+1. 新增目录 `03b_星号双字符模式标记_可选\`，内附与 `group\5508clean4星号.py` 同内容的脚本副本，供「含代码」的清洗类分析归档。
+2. 未修改 `流程梳理说明.txt`、`文件命名.txt` 及 01–12 既有 step 内文件，避免对既有版本行造成无意的覆盖式 diff。
+
+六、对「文本性质分析」的界定（与组内要求对齐）
+------------------------
+- 以代码单元为主的概况/主题/描述 notebook（如 `analysis2.0.ipynb`）在约定下可作为与主链并列的探索材料，不并入本主整理目录，亦不视为对 clean4 列的依赖证明。
+
+（文档结束）

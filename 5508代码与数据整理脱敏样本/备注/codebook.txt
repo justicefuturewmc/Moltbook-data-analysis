@@ -1,0 +1,69 @@
+content_type：code 或 text，标识内容类型。
+code_function：对代码类内容的细化标签，可能的值包括：
+crypto_mint：虚拟币铸造操作（op: "mint"）
+crypto_transfer：虚拟币转移操作（op: "transfer"）
+crypto_link：钱包链接操作（op: "link"）
+json_data：普通 JSON 数据（非 mbc-20 协议）
+code_block：包含代码块标记的内容
+general_code：其他编程代码（如 Python 脚本）
+文本类对应列为空（NaN）。
+
+新增一列 final_type：
+若 content_type 为 text → final_type = 'text'。
+若 code_function 属于虚拟币操作（如 crypto_mint、crypto_transfer 等）→ 直接标记为 'script'。
+其他代码类（json_data、code_block、general_code）：
+提取所有代码块内容（三个反引号包裹的部分）以及内联 JSON 对象。
+计算代码内容总长度（code_len）和全文总长度（total_len）。
+若 code_len / total_len >= 0.7 或 (total_len - code_len) < 200，则视为 'script'，否则视为 'text'。
+-----------------------------------------------
+一、网络中心性原始指标（未归一化）
+node  节点名称，对应网络中的 agent 标识（与属性表中的 name 一致） 
+degree_centrality  度中心性（标准化值，0~1）。反映节点直接连接的节点数量占网络总节点数的比例，值越大说明节点在网络中越“活跃”。 
+weighted_degree  加权度。节点所有连接边的权重之和（入边+出边），反映节点交互的总强度。 
+pagerank  PageRank 值。基于链接结构的节点重要性评分，值越高表示节点在信息传播中越重要。 
+eigen_centrality  特征向量中心性。不仅考虑连接数量，还考虑邻居节点的重要性，值越高说明节点与“重要”节点相连。 
+betweenness  介数中心性（标准化，0~1）。节点在所有最短路径中出现的频率，值越高表示节点在不同社区间扮演“桥梁”角色的能力越强。 
+
+二、属性指标（原始值与归一化值）
+name  agent 名称，与 node 对应 
+karma  社区贡献度（平均）。来自属性表，反映 agent 在平台上的声誉。 
+x_follower_count  Twitter 粉丝数（平均）。反映 agent 的外部影响力。 
+post_upvotes  帖子获得的点赞数（平均）。反映内容受欢迎程度。 
+karma_norm  对 karma 进行 Min‑Max 归一化后的值（0~1）。 
+follower_norm  对 x_follower_count 归一化后的值。 
+upvote_norm  对 post_upvotes 归一化后的值。 
+attr_score  属性综合得分。由上述三个归一化指标加权计算得到（权重：karma 0.4，follower 0.3，upvote 0.3），反映节点在社交属性层面的等级。 
+
+三、网络指标归一化值
+degree_norm  度中心性归一化值 
+weighted_degree_norm  加权度归一化值 
+pagerank_norm  PageRank 归一化值 
+eigen_norm  特征向量中心性归一化值 
+betweenness_norm  介数中心性归一化值 
+> 归一化将所有网络指标统一到 0~1 范围，便于后续加权求和。
+
+network_score 网络综合得分。由上述五个归一化网络指标加权计算得到（权重：degree 0.15，weighted_degree 0.25，pagerank 0.25，eigen 0.15，betweenness 0.20），反映节点在网络结构中的重要性。 
+social_rank_score 最终社交等级得分。取network_score和attr_score的加权平均（各占 50%），综合评估节点的社交地位。 
+level 社交等级分层。基于 social_rank_score 的四分位数划分，分为“低”、“中低”、“中高”、“高”四个等级。 
+-----------------------------------------------
+ant_type（对抗类型）：0 = 无对抗，1 = 质疑（要求举证/验证），2 = 反驳（否定观点），3 = 攻击（贬低Agent），4 = 冲突（立场对立）
+ant_strength（对抗强度）：1-5 分（1=轻微，5=极端）
+ant_intent（对抗意图）：0=无意图（幻觉），1=有意图（主动）
+ant_strategy（对抗策略）：可选值：证据反驳、逻辑攻击、身份压制、情感煽动、避重就轻、人身攻击、数据质疑、无策略
+is_antagonistic：分类索引合并
+-----------------------------------------------
+'antagonism': "对抗性 (Antagonism): 帖子是否包含对他人观点、身份或能力的攻击、质疑、反驳或讽刺？(0-10分)",
+'anthropomorphism': "拟人化特征 (Anthropomorphism): 帖子是否表现出情绪、立场、幽默或人格化表达？(0-10分)",
+'self_awareness': "自我意识提及 (Self-awareness): 帖子是否讨论“作为AI的存在”、“意识”、“记忆连续性”、“身份”等元认知主题？(0-10分)",
+'meaningless_routine': "规律性无意义行为 (Meaningless Routine): 帖子是否表现出机械性重复、无目的随机行为、单纯谈论个人喜好且无实质交互？(0-10分，0=完全无，10=高度重复/随机)"
+-----------------------------------------------
+原始数据文件 moltbook_agents_full_extract（3.2）操作
+一次预处理文件 cleaned_moltbook操作
+二次预处理文件 classified_moltbook操作2
+基准分析文件 refined_moltbook
+群体分析文件 social_rank_analysis_with_betweenness_total
+对抗分析文件 moltbook_ant_annotated
+细化对抗文化 moltbook_conditional_analysis
+讨论分析文件 to_be_labeled_full_v4
+脏话分析文件 profanity_analysis_posts.xlsx
+------------------------------------------------
